@@ -6,7 +6,7 @@
 
 .section .text
 .global uart_print
-.global uart_getc
+.global uart_trygetc
 .global uart_putc
 
 .align 4
@@ -34,20 +34,22 @@ uart_print: # (reg2 -> string)
 .done:
     retw
 
-# TODO: idf.py monitor terminal cant send bytes to ESP32, use a proper serial terminal (screen)
 .align 4
-uart_getc:
+uart_trygetc:
     entry a1, 16
 
     movi a6, UART_FIFO
     movi a7, UART_STATUS
 
-.wait_rx:
     l32i a4, a7, 0
     extui a4, a4, 0, 8      # RXFIFO count
-    beqz a4, .wait_rx       # wait for a single byte
+    beqz a4, .uart_empty
 
     l8ui a2, a6, 0
+
+    retw
+.uart_empty:
+    movi a2, -1
     retw
 
 .align 4 
@@ -64,7 +66,15 @@ uart_putc:
     bge a4, a5, .wait_putc
 
     s8i a2, a6, 0
+
+    // if CR -13-, send LF
+    movi a4, 13
+    beq a2, a4, .send_lf
     retw
 
+.send_lf:
+    movi a2, 10
+    s8i a2, a6, 0
+    retw
 
 
