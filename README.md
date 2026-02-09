@@ -15,8 +15,8 @@ Requires ESP-IDF.
 
 commands: 
 ```text
-    idf.py build
-    idf.py flash monitor
+    idf.py build flash
+    idf.py monitor
 ```
 
 # Docs
