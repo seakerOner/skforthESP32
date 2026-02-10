@@ -1,4 +1,5 @@
-# the dictionary is a list of WORDS
+# collection of primitive WORDS
+# primitive words give core functionlity to skforth. They are stored in Flash memory and not editable
 #
 # WORD structure:
 #
@@ -10,25 +11,17 @@
 # offset 6-7 : padding
 # offset 8   : code addr      (  4     )
 # offset 12  : name ascii     ( 20 max )
-    .section .rodata
-.equ WORD_LEN, 32
-    .global WORD_LEN
 
     .section .text
+    .extern WORD_LEN
     .extern dictionary
     .extern here_dic
     .extern latest_word
 
-dic_getword:
-
-word_getprev:
-
-word_getimmediate:
-
-word_getnamelen:
-
-word_getcode:
-
-word_getname:
+init_prim_words: 
+    
+    ret
 
 
+code_dup:
+    

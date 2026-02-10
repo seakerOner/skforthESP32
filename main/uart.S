@@ -3,6 +3,7 @@
 .equ UART_FIFO,   0x3FF40000
 .equ UART_STATUS, 0x3FF4001C
 .equ UART_FIFO_LIMIT, 128
+    .global UART_FIFO_LIMIT
 
 .section .text
 .global uart_print

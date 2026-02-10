@@ -4,7 +4,6 @@
 .global delay
 
 delay:
-    entry a1, 32 
     movi a10, 1
     call8 vTaskDelay
-    retw
+    ret

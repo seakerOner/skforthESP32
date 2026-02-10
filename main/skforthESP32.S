@@ -12,27 +12,62 @@ sk_handle:
 .extern delay
 .extern lexer
 
-.section .bss
+    .section .bss
 
 .align 4
 input_buffer:
-    .space 128  # uart fifo max size
+    .space 128
 
 .align 4
 input_len:
     .space 1
 
+    .section .data
+    # WORD        -> 32 bytes
+    # 32000 bytes -> 1000 WORDS  (0.032 MB)
+
+.align 4
+dictionary:
+    .space 32*1000
+
+.align 4
+here_dic:
+    .space 4    #   addr to next free spot in DIC
+
+.align 4
+latest_word:
+    .space 4    
+
+.global dictionary
+.global here_dic
+.global latest_word
+
+
     # TODO: add backspace/delete functionality
-.section .text
+    .section .text
+    .extern init_stack
+
 .global app_main
 
 .align 4
 app_main:
     entry a1, 32
 
+    # init here_dic and latest_word
+    movi a2, dictionary
+    movi a3, here_dic
+    s32i a2, a3, 0
+    movi a3, latest_word
+    s32i a2, a3, 0
+
+
     # INVARIANT REGISTERS
-    # phy a2 -> input_len    addr
-    # phy a3 -> input_buffer addr
+    # phy a2                         -> input_len    addr
+    # phy a3                         -> input_buffer addr
+    # phy a26 (logic a10 offset 16 ) -> sp
+    # phy a27 (logic a11 offset 16 ) -> stack
+
+    call0 init_stack
     movi a2, input_len
     movi a3, input_buffer
 
@@ -50,7 +85,7 @@ app_main:
     beqi a10, -1, .delay
 
     l8ui a4, a2, 0              # load len
-    movi a5, 126
+    movi a5, UART_FIFO_LIMIT
     bge a4, a5, .delay          # buffer full
 
     #store byte
@@ -66,7 +101,7 @@ app_main:
     beqi a10, 10, interpret_line
 
 .delay:
-    call8 delay
+    call0 delay
     j .forever
 
 interpret_line:
