@@ -1,7 +1,8 @@
 .section .rodata
 
 msg:
-.asciz "Hello from ASM skforth ESP32!\n"
+.asciz "Welcome to skforthESP32! (max 126 char per line)\n"
+
 sk_handle:
 .asciz "skforth>"
 
@@ -9,6 +10,7 @@ sk_handle:
 .extern uart_trygetc
 .extern uart_putc
 .extern delay
+.extern lexer
 
 .section .bss
 
@@ -39,46 +41,44 @@ app_main:
 
 .print_skhandle:
     movi a5, 0
-    s8i a5, a2, 0            # reset len
+    s8i a5, a2, 0               # reset len
 
     movi a10, sk_handle
     call8 uart_print
 .forever:
-    call8 uart_trygetc      # get what the user types on terminal
+    call8 uart_trygetc          # get what the user types on terminal
     beqi a10, -1, .delay
 
-    l8ui a4, a2, 0          # load len
+    l8ui a4, a2, 0              # load len
     movi a5, 126
-    bge a4, a5, .delay    # buffer full
+    bge a4, a5, .delay          # buffer full
 
     #store byte
     add a6, a3, a4
 
-    s8i a10, a6, 0          # save written byte to buffer
+    s8i a10, a6, 0              # save written byte to buffer
 
     call8 uart_putc
     addi a4, a4, 1
     s8i a4, a2, 0
 
     # newline
-    beqi a10, 10, .print_line
+    beqi a10, 10, interpret_line
 
 .delay:
     call8 delay
     j .forever
 
-.print_line:
+interpret_line:
     l8ui a4, a2, 0
 
     add a6, a3, a4
-    movi a5, 10             # cr
+    movi a5, 10                 # cr
     s8i a5, a6, 0
     addi a6, a6, 1
-    movi a5, 0              # null terminator
+    movi a5, 0                  # null terminator
     s8i a5, a6, 0
 
-
-    mov a10, a3
-    call8 uart_print
+    call0 lexer
 
     j .print_skhandle
