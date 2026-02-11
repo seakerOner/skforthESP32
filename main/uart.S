@@ -6,16 +6,24 @@
     .global UART_FIFO_LIMIT
 
 .section .text
+.global init_uart
 .global uart_print
 .global uart_trygetc
 .global uart_putc
 
 .align 4
-uart_print: # (reg2 -> string)
+init_uart:
     entry a1, 16
 
     movi a6, UART_FIFO
     movi a7, UART_STATUS
+
+    retw
+
+.align 4
+uart_print: # (reg2 -> string)
+    entry a1, 16
+
     mov a3, a2               # string
 
 .loop:
@@ -39,9 +47,6 @@ uart_print: # (reg2 -> string)
 uart_trygetc:
     entry a1, 16
 
-    movi a6, UART_FIFO
-    movi a7, UART_STATUS
-
     l32i a4, a7, 0
     extui a4, a4, 0, 8      # RXFIFO count
     beqz a4, .uart_empty
@@ -56,9 +61,6 @@ uart_trygetc:
 .align 4 
 uart_putc:
     entry a1, 16 
-
-    movi a6, UART_FIFO
-    movi a7, UART_STATUS
 
 .wait_putc:
     l32i a4, a7, 0

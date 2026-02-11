@@ -39,13 +39,15 @@ app_main:
     movi a3, latest_word
     s32i a2, a3, 0
 
-
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr
+    # phy a14 (logic  a6 offset  8 ) -> uart fifo       addr
+    # phy a15 (logic  a7 offset  8 ) -> uart status     addr
     # phy a22 (logic a10 offset 12 ) -> sp index     (max 7)
     # phy a23 (logic a11 offset 12 ) -> stack base      addr      
 
+    call8  init_uart
     call12 init_stack
     movi a2, input_len
     movi a3, input_buffer

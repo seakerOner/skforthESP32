@@ -48,4 +48,38 @@ code_mult:
     call12 spush
     ret
 
+code_drop:
+    call12 spop
+    ret
+
+code_swap:
+    call12 spop
+    mov a15, a14
+    call12 spop
+    mov a13, a14
+    mov a14, a15
+    call12 spush
+    mov a14, a13
+    call12 spush
+    ret
+
+code_over:
+    call12 spop
+    mov a15, a14
+    call12 spop
+    call12 spush
+    mov a13, a14
+    mov a14, a15
+    call12 spush
+    mov a14, a13
+    call12 spush
+    ret
+
+code_depth:
+    ROTW 3
+    mov a2, a10
+    ROTW -3
+    call12 spush
+    ret
+
 

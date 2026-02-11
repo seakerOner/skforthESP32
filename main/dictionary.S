@@ -35,9 +35,14 @@ latest_word:
 
 
     .section .text
-    .extern dictionary
-    .extern here_dic
-    .extern latest_word
+
+# a10 -> name_ptr
+# a11 -> name_len
+# a12 -> code_ptr
+# a13 -> immediate flag
+dic_addprim:
+
+
 
 dic_getword:
 
