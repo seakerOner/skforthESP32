@@ -5,8 +5,6 @@ stack:
     .space 4*8
 
 .align 4
-sp:
-    .space 4
 
     .global stack
     .global sp
@@ -18,19 +16,16 @@ sp:
 
 .align 4
 init_stack:
-    ROTW 4      # offset reg window by 16
+    entry a1, 32
 
-    movi a10, sp
+    movi a10, 0
     movi a11, stack
-    movi a3, 0 
-    s32i a3, a10, 0
 
-    ROTW -4     # offset reg window by -16
-    ret
+    retw
 
 .align 4
-spush: # (phy a18 | log a2 -> val)
-    ROTW 4
+spush: # (phy a14 | log a2 -> val)
+    entry a1, 32
     mov a9, a11    # stack
 
     movi a8, 4
@@ -41,12 +36,11 @@ spush: # (phy a18 | log a2 -> val)
 
     addi a10, a10, 1
 
-    ROTW -4
-    ret
+    retw
 
 .align 4
-spop: # return (phy a18 | log a2 -> val)
-    ROTW 4
+spop: # return (phy a14 | log a2 -> val)
+    entry a1, 32
     mov a9, a11    # stack
 
     addi a10, a10, -1
@@ -57,5 +51,4 @@ spop: # return (phy a18 | log a2 -> val)
 
     l32i a2, a9, 0
 
-    ROTW -4
-    ret
+    retw

@@ -16,32 +16,11 @@ sk_handle:
 
 .align 4
 input_buffer:
-    .space 128
+    .space 128      # uart fifo max size
 
 .align 4
 input_len:
     .space 1
-
-    .section .data
-    # WORD        -> 32 bytes
-    # 32000 bytes -> 1000 WORDS  (0.032 MB)
-
-.align 4
-dictionary:
-    .space 32*1000
-
-.align 4
-here_dic:
-    .space 4    #   addr to next free spot in DIC
-
-.align 4
-latest_word:
-    .space 4    
-
-.global dictionary
-.global here_dic
-.global latest_word
-
 
     # TODO: add backspace/delete functionality
     .section .text
@@ -62,12 +41,12 @@ app_main:
 
 
     # INVARIANT REGISTERS
-    # phy a2                         -> input_len    addr
-    # phy a3                         -> input_buffer addr
-    # phy a26 (logic a10 offset 16 ) -> sp
-    # phy a27 (logic a11 offset 16 ) -> stack
+    # phy a2                         -> input_len       addr
+    # phy a3                         -> input_buffer    addr
+    # phy a22 (logic a10 offset 12 ) -> sp index     (max 7)
+    # phy a23 (logic a11 offset 12 ) -> stack base      addr      
 
-    call0 init_stack
+    call12 init_stack
     movi a2, input_len
     movi a3, input_buffer
 

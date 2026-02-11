@@ -17,6 +17,9 @@
     .extern dictionary
     .extern here_dic
     .extern latest_word
+    .extern spush
+    .extern spop
+
 
 init_prim_words: 
     
@@ -24,4 +27,25 @@ init_prim_words:
 
 
 code_dup:
-    
+    call12 spop  # return val phy a14
+    call12 spush
+    call12 spush
+    ret
+
+code_plus:
+    call12 spop  # return val phy a14
+    mov a15, a14
+    call12 spop
+    add a14, a15, a14
+    call12 spush
+    ret
+
+code_mult:
+    call12 spop # return val phy a14
+    mov a15, a14
+    call12 spop
+    mull a14, a15, a14
+    call12 spush
+    ret
+
+

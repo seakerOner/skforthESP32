@@ -12,6 +12,7 @@ Tested on ESPLAY ESP32 (ESP32-WROVER module):
 ## Build / Flash / Monitor
 
 Requires ESP-IDF.
+(You can use other serial consoles to access the interpreter; e.g. putty )
 
 commands: 
 ```text

@@ -14,6 +14,26 @@
 .equ WORD_LEN, 32
     .global WORD_LEN
 
+    .section .data
+    # WORD        -> 32 bytes
+    # 32000 bytes -> 1000 WORDS  (0.032 MB)
+.align 4
+dictionary:
+    .space 32*1000
+
+.align 4
+here_dic:
+    .space 4    #   addr to next free spot in DIC
+
+.align 4
+latest_word:
+    .space 4    
+
+.global dictionary
+.global here_dic
+.global latest_word
+
+
     .section .text
     .extern dictionary
     .extern here_dic
