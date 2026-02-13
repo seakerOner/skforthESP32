@@ -6,12 +6,6 @@ msg:
 sk_handle:
 .asciz "skforth>"
 
-.extern uart_print
-.extern uart_trygetc
-.extern uart_putc
-.extern delay
-.extern lexer
-
     .section .bss
 
 .align 4
@@ -24,7 +18,6 @@ input_len:
 
     # TODO: add backspace/delete functionality
     .section .text
-    .extern init_stack
 
 .global app_main
 
@@ -37,7 +30,51 @@ app_main:
     movi a3, here_dic
     s32i a2, a3, 0
     movi a3, latest_word
-    s32i a2, a3, 0
+    movi a4, 0
+    s32i a4, a3, 0
+
+    # add primitives to DIC
+    movi a10, name_dup
+    movi a11, 3
+    movi a12, code_dup
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_plus
+    movi a11, 1
+    movi a12, code_plus
+    movi a13, 0
+    call0 dic_addprim
+    
+    movi a10, name_mult
+    movi a11, 1
+    movi a12, code_mult
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_drop
+    movi a11, 4
+    movi a12, code_drop
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_swap
+    movi a11, 4
+    movi a12, code_swap
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_depth
+    movi a11, 5
+    movi a12, code_depth
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_over
+    movi a11, 4
+    movi a12, code_over
+    movi a13, 0
+    call0 dic_addprim
 
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
