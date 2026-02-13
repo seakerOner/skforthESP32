@@ -111,6 +111,8 @@ app_main:
 
     s8i a10, a6, 0              # save written byte to buffer
 
+    beqi a10,  8, .backspace
+
     call8 uart_putc
     addi a4, a4, 1
     s8i a4, a2, 0
@@ -118,9 +120,23 @@ app_main:
     # newline
     beqi a10, 10, interpret_line
 
+
 .delay:
     call0 delay
     j .forever
+
+.backspace:
+    beqz a4, .delay
+    call8 uart_putc
+
+    addi a4, a4, -1
+    s8i a4, a2, 0
+    movi a10, 32                # space to clean char
+    call8 uart_putc
+    movi a10, 8                 # put the cursor on the original position
+    call8 uart_putc
+    j .delay
+    
 
 interpret_line:
     l8ui a4, a2, 0
