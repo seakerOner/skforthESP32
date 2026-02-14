@@ -9,6 +9,10 @@ sk_handle:
     .section .bss
 
 .align 4
+mode:
+    .space 1
+
+.align 4
 input_buffer:
     .space 128      # uart fifo max size
 
@@ -24,6 +28,10 @@ input_len:
 .align 4
 app_main:
     entry a1, 32
+
+    movi a2, mode
+    movi a3, INTERPRET
+    s8i a3, a2, 0
 
     # init here_dic and latest_word
     movi a2, dictionary
@@ -140,6 +148,8 @@ app_main:
 
 interpret_line:
     l8ui a4, a2, 0
+
+    beqi a4, 1, .print_skhandle
 
     add a6, a3, a4
     movi a5, 10                 # cr
