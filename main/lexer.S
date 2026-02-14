@@ -11,6 +11,7 @@
 lexer: # phy a2 -> len | phy a3 -> buffer
     l8ui a4, a2, 0
 
+    addi a4, a4, -1     # ignore cr
     movi a5, 0          # loop counter
 
 .next_token:
@@ -32,8 +33,6 @@ lexer: # phy a2 -> len | phy a3 -> buffer
     addi a5, a5, 1
     bne a5, a4, .loop
 
-    beqz a7, .end
-
     bnei a6, 32, found_token
 
 .end:
@@ -45,10 +44,11 @@ save_token_start:
     add a8, a3, a5
     j 1b
 
-
-    # TODO: fix where buff is only SPACE
 found_token: # a7 -> tokenlen | a8 -> token addr
-    movi a10, 78
+    l8ui a10, a8, 0
     call8 uart_putc
+
+
+
     beq a5, a4, .end
     j .next_token

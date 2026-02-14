@@ -151,13 +151,6 @@ interpret_line:
 
     beqi a4, 1, .print_skhandle
 
-    add a6, a3, a4
-    movi a5, 10                 # cr
-    s8i a5, a6, 0
-    addi a6, a6, 1
-    movi a5, 0                  # null terminator
-    s8i a5, a6, 0
-
     call0 lexer
 
     j .print_skhandle
