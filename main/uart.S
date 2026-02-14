@@ -8,6 +8,7 @@
 .section .text
 .global init_uart
 .global uart_print
+.global uart_printn
 .global uart_trygetc
 .global uart_putc
 
@@ -78,6 +79,22 @@ uart_putc:
 .send_lf:
     movi a2, 10
     s8i a2, a6, 0
+    retw
+
+.align 4
+uart_printn: # a10 -> addr | a11 -> len
+    entry a1, 16
+    mov a12, a10
+
+    movi a13, 0     # counter
+    .step_char:
+    beq a13, a11, .doneprint
+    add a10, a12, a13
+    call8 uart_putc
+    addi a13, a13, 1
+    j .step_char
+
+.doneprint:
     retw
 
 
