@@ -7,6 +7,7 @@ sk_handle:
 .asciz "skforth>"
 
     .section .bss
+    .global mode
 
 .align 4
 mode:
@@ -23,6 +24,7 @@ input_len:
     .section .text
 
 .global app_main
+.global .print_skhandle
 
 .align 4
 app_main:

@@ -51,6 +51,7 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     # traverse dictionary for matching name
     movi a9, latest_word
     3:
+    beqi a9, 0, tok_not_in_dic      # reached last word 
 
     l8ui a10, a9, 5         # word len
 
@@ -72,15 +73,22 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     j .step_tok_char
 
 step_dic: # a9 -> word base addr
-    beqi a9, 0, tok_not_in_dic      # reached last word 
     l32i a9, a9, 0                  # WORD -> prev word
     j 3b
 
-tok_not_in_dic:
+tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
     # try to transform token into a number, add it to the stack and step orelse fail
 
     # TODO: 
 
+    mov a10, a8
+    mov a11, a7
+    call8 uart_printn
+    movi a10, unknown_word_err
+    call8 uart_print
+    j .print_skhandle               #   reset
+
+.end_tok_transformation:
     beq a5, a4, .end
     j .next_tok
 

@@ -82,15 +82,24 @@ uart_putc:
     retw
 
 .align 4
-uart_printn: # a10 -> addr | a11 -> len
+uart_printn: # a2 -> addr | a3 -> len
     entry a1, 16
-    mov a12, a10
+    mov a12, a2
 
     movi a13, 0     # counter
     .step_char:
-    beq a13, a11, .doneprint
+    beq a13, a3, .doneprint
     add a10, a12, a13
-    call8 uart_putc
+
+.wait_printn:
+    l32i a4, a7, 0
+    extui a4, a4, 16, 8 
+    movi a5, UART_FIFO_LIMIT
+    bge a4, a5, .wait_printn
+
+    l8ui a9, a10, 0
+    s8i a9, a6, 0
+
     addi a13, a13, 1
     j .step_char
 
