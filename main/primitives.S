@@ -38,74 +38,86 @@ name_over:
 name_depth:
     .ascii "depth"
 
+# offset by 4 on register window is already expected when calling primitive's code addr
+# so when calling spop/spush we have access to stack/sp invariant registers on 
+# offset 12 (4 offset from original caller and 8 offset on callee)
+#
+# this is done so we can safely execute Forth WORDS and retw without breaking the Lexer "context"
     .section .iram.text, "ax"
 
 .global code_dup
 .align 4
 code_dup:
-    call12 spop  # return val phy a14
-    call12 spush
-    call12 spush
+    entry a1, 32
+    call8 spop  
+    call8 spush
+    call8 spush
     retw
 
 .global code_plus
 .align 4
 code_plus:
-    call12 spop  # return val phy a14
+    entry a1, 32 
+    call8 spop 
     mov a15, a14
-    call12 spop
+    call8 spop
     add a14, a15, a14
-    call12 spush
+    call8 spush
     retw
 
 .global code_mult
 .align 4
 code_mult:
-    call12 spop # return val phy a14
+    entry a1, 32 
+    call8 spop 
     mov a15, a14
-    call12 spop
+    call8 spop
     mull a14, a15, a14
-    call12 spush
+    call8 spush
     retw
 
 .global code_drop
 .align 4
 code_drop:
-    call12 spop
+    entry a1, 32
+    call8 spop
     retw
 
 .global code_swap
 .align 4
 code_swap:
-    call12 spop
+    entry a1, 32
+    call8 spop
     mov a15, a14
-    call12 spop
+    call8 spop
     mov a13, a14
     mov a14, a15
-    call12 spush
+    call8 spush
     mov a14, a13
-    call12 spush
+    call8 spush
     retw
 
 .global code_over
 .align 4
 code_over:
-    call12 spop
+    entry a1, 32
+    call8 spop
     mov a15, a14
-    call12 spop
-    call12 spush
+    call8 spop
+    call8 spush
     mov a13, a14
     mov a14, a15
-    call12 spush
+    call8 spush
     mov a14, a13
-    call12 spush
+    call8 spush
     retw
 
 .global code_depth
 .align 4
 code_depth:
-    ROTW 3
+    entry a1, 32
+    ROTW 2
     mov a2, a10
-    ROTW -3
-    call12 spush
+    ROTW -2
+    call8 spush
     retw

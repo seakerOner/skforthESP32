@@ -72,8 +72,8 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     j .step_tok_char
 
 step_dic: # a9 -> word base addr
-    l32i a9, a9, 0                  # WORD -> prev word
     beqi a9, 0, tok_not_in_dic      # reached last word 
+    l32i a9, a9, 0                  # WORD -> prev word
     j 3b
 
 tok_not_in_dic:
@@ -87,8 +87,25 @@ tok_not_in_dic:
 exec_word: # a9 -> word base addr 
     # core logic of the lexer if WORD is found 
 
-    #TODO:
+    movi a10, mode
+    l8ui a10, a10, 0
 
+    bnez a10, .comptime             # IF 0 -> interpret ELSE 1 -> comptime
+    interpret:
+        l32i a10, a9, 8             # WORD code addr
+    
+    j .end_word_exec
+    .comptime:
+        l8ui a10, a9, 4                 # offset 4 -> is_immediate
+        bnez a10, .not_immediate        # IF 0 -> not_immediate ELSE 1 -> is_immediate
+        immediate:
+            l32i a10, a9, 8                 # WORD code addr
+            callx4 a10
+        j .end_word_exec
+        .not_immediate:
+            # TODO: add word to code_space
+
+.end_word_exec:
     beq a5, a4, .end
     j .next_tok
 

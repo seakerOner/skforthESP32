@@ -20,7 +20,6 @@ input_buffer:
 input_len:
     .space 1
 
-    # TODO: add backspace/delete functionality
     .section .text
 
 .global app_main
