@@ -38,7 +38,7 @@ lexer: # phy a2 -> len | phy a3 -> buffer
     bnei a6, 32, found_tok
 
 .end:
-    ret
+    j .print_skhandle
 
 # ---
 

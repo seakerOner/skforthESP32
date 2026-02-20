@@ -1,3 +1,5 @@
+# TODO: add word tracing when error occurs for better debugging
+
 .section .rodata
 
 msg:
@@ -85,7 +87,6 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
-    # TODO: refactor uart registers to another registers (and update dependents)
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr
@@ -121,7 +122,7 @@ app_main:
 
     s8i a10, a6, 0              # save written byte to buffer
 
-    beqi a10,  8, .backspace
+    beqi a10, 8, .backspace
 
     call8 uart_putc
     addi a4, a4, 1
@@ -154,5 +155,3 @@ interpret_line:
     beqi a4, 1, .print_skhandle
 
     call0 lexer
-
-    j .print_skhandle

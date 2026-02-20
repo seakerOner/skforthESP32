@@ -139,12 +139,12 @@ code_depth:
     retw
 
 .err_stackoverflow:
-    movi a10, stackoverflow_err_msg
-    call8 uart_print
+    movi a6, stackoverflow_err_msg
+    call4 uart_print
     retw
 
 .err_stackunderflow:
-    movi a10, stackunderflow_err_msg
-    call8 uart_print
+    movi a6, stackunderflow_err_msg
+    call4 uart_print
     retw
 

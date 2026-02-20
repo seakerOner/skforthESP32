@@ -98,8 +98,8 @@ uart_printn: # a2 -> addr | a3 -> len
     movi a5, UART_FIFO_LIMIT
     bge a4, a5, .wait_printn
 
-    l8ui a9, a10, 0
-    s8i a9, a6, 0
+    l8ui a10, a10, 0
+    s8i a10, a6, 0
 
     addi a13, a13, 1
     j .step_char
