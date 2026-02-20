@@ -38,18 +38,25 @@ name_over:
 name_depth:
     .ascii "depth"
 
+stackoverflow_err_msg:
+    .asciz "ERROR: STACK is full... resetting\n"
+stackunderflow_err_msg:
+    .asciz "ERROR: STACK is empty... resetting\n"
+
 # offset by 4 on register window is already expected when calling primitive's code addr
 # so when calling spop/spush we have access to stack/sp invariant registers on 
 # offset 12 (4 offset from original caller and 8 offset on callee)
 #
 # this is done so we can safely execute Forth WORDS and retw without breaking the Lexer "context"
-    .section .iram.text, "ax"
+
+    .section .iram1.text, "ax"
 
 .global code_dup
 .align 4
 code_dup:
     entry a1, 32
     call8 spop  
+    beqz a11, .err_stackunderflow
     call8 spush
     call8 spush
     retw
@@ -58,11 +65,13 @@ code_dup:
 .align 4
 code_plus:
     entry a1, 32 
-    call8 spop 
-    mov a15, a14
-    call8 spop
-    add a14, a15, a14
-    call8 spush
+    call12 spop 
+    beqz a15, .err_stackunderflow
+    mov a12, a15
+    call12 spop
+    beqz a11, .err_stackunderflow
+    add a15, a12, a15
+    call12 spush
     retw
 
 .global code_mult
@@ -70,9 +79,11 @@ code_plus:
 code_mult:
     entry a1, 32 
     call8 spop 
-    mov a15, a14
+    beqz a11, .err_stackunderflow
+    mov a12, a10
     call8 spop
-    mull a14, a15, a14
+    beqz a11, .err_stackunderflow
+    mull a10, a12, a10
     call8 spush
     retw
 
@@ -81,6 +92,7 @@ code_mult:
 code_drop:
     entry a1, 32
     call8 spop
+    beqz a11, .err_stackunderflow
     retw
 
 .global code_swap
@@ -88,12 +100,14 @@ code_drop:
 code_swap:
     entry a1, 32
     call8 spop
-    mov a15, a14
+    beqz a11, .err_stackunderflow
+    mov a12, a10
     call8 spop
-    mov a13, a14
-    mov a14, a15
+    beqz a11, .err_stackunderflow
+    mov a13, a10
+    mov a10, a12
     call8 spush
-    mov a14, a13
+    mov a10, a13
     call8 spush
     retw
 
@@ -102,13 +116,15 @@ code_swap:
 code_over:
     entry a1, 32
     call8 spop
-    mov a15, a14
+    beqz a11, .err_stackunderflow
+    mov a12, a10
     call8 spop
+    beqz a11, .err_stackunderflow
     call8 spush
-    mov a13, a14
-    mov a14, a15
+    mov a13, a10
+    mov a10, a12
     call8 spush
-    mov a14, a13
+    mov a10, a13
     call8 spush
     retw
 
@@ -121,3 +137,14 @@ code_depth:
     ROTW -2
     call8 spush
     retw
+
+.err_stackoverflow:
+    movi a10, stackoverflow_err_msg
+    call8 uart_print
+    retw
+
+.err_stackunderflow:
+    movi a10, stackunderflow_err_msg
+    call8 uart_print
+    retw
+

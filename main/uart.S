@@ -16,6 +16,7 @@
 init_uart:
     entry a1, 16
 
+    # TODO: change this registers. and update other places in the code base
     movi a6, UART_FIFO
     movi a7, UART_STATUS
 

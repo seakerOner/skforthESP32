@@ -50,6 +50,7 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
 
     # traverse dictionary for matching name
     movi a9, latest_word
+    l32i a9, a9, 0
     3:
     beqi a9, 0, tok_not_in_dic      # reached last word 
 
@@ -69,6 +70,7 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     add a11, a8, a10    # token[i]
     l8ui a11, a11, 0    
 
+    addi a10, a10, 1
     bne a11, a13, step_dic
     j .step_tok_char
 
@@ -101,6 +103,7 @@ exec_word: # a9 -> word base addr
     bnez a10, .comptime             # IF 0 -> interpret ELSE 1 -> comptime
     interpret:
         l32i a10, a9, 8             # WORD code addr
+        callx4 a10
     
     j .end_word_exec
     .comptime:

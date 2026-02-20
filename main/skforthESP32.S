@@ -85,6 +85,7 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
+    # TODO: refactor uart registers to another registers (and update dependents)
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr
