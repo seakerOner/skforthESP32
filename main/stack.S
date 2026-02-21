@@ -27,7 +27,6 @@ init_stack:
 .align 4
 spush: # (phy a14 | log a2 -> val)
     entry a1, 32
-    beqi a10, 8, .spush_err
     mov a9, a11    # stack
 
     movi a8, 4
@@ -38,17 +37,11 @@ spush: # (phy a14 | log a2 -> val)
 
     addi a10, a10, 1
 
-    movi a3, 1      # OK
-    retw
-
-.spush_err:
-    movi a3, 0      # ERR
     retw
 
 .align 4
 spop: # return (phy a14 | log a2 -> val)
     entry a1, 32
-    beqz a10, .spop_err
     mov a9, a11    # stack
 
     addi a10, a10, -1
@@ -59,8 +52,4 @@ spop: # return (phy a14 | log a2 -> val)
 
     l32i a2, a9, 0
 
-    movi a3, 1      # OK
-    retw
-.spop_err:
-    movi a3, 0      # ERR
     retw

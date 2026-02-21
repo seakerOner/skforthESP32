@@ -154,4 +154,4 @@ interpret_line:
 
     beqi a4, 1, .print_skhandle
 
-    call0 lexer
+    j lexer
