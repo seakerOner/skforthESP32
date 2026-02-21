@@ -40,48 +40,49 @@ name_depth:
 
     .section .iram1.text, "ax"
 
+    # TODO: redo primitives
+
 .global code_dup
 .align 4
 code_dup:
-    entry a1, 32
-    call8 spop  
-    call8 spush
-    call8 spush
-    retw
+    call12 spop  
+    call12 spush
+    call12 spush
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_plus
 .align 4
 code_plus:
-    entry a1, 32 
     call8 spop 
     mov a12, a11
     call8 spop
     add a11, a12, a11
     call8 spush
-    retw
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_mult
 .align 4
 code_mult:
-    entry a1, 32 
     call8 spop 
     mov a12, a10
     call8 spop
     mull a10, a12, a10
     call8 spush
-    retw
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_drop
 .align 4
 code_drop:
-    entry a1, 32
-    call8 spop
-    retw
+    call12 spop
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_swap
 .align 4
 code_swap:
-    entry a1, 32
     call8 spop
     mov a12, a10
     call8 spop
@@ -90,12 +91,12 @@ code_swap:
     call8 spush
     mov a10, a13
     call8 spush
-    retw
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_over
 .align 4
 code_over:
-    entry a1, 32
     call8 spop
     mov a12, a10
     call8 spop
@@ -105,14 +106,15 @@ code_over:
     call8 spush
     mov a10, a13
     call8 spush
-    retw
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
 .global code_depth
 .align 4
 code_depth:
-    entry a1, 32
     ROTW 2
     mov a2, a10
     ROTW -2
     call8 spush
-    retw
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely

@@ -8,6 +8,7 @@ unknown_word_err:
 
     .section .text
     .global lexer
+    .global .end_word_exec
 
 .align 4
 lexer: # phy a2 -> len | phy a3 -> buffer
@@ -38,7 +39,7 @@ lexer: # phy a2 -> len | phy a3 -> buffer
     bnei a6, 32, found_tok
 
 .end:
-    j .print_skhandle
+    ret
 
 # ---
 
@@ -103,19 +104,17 @@ exec_word: # a9 -> word base addr
     bnez a10, .comptime             # IF 0 -> interpret ELSE 1 -> comptime
     interpret:
         l32i a10, a9, 8             # WORD code addr
-        callx4 a10
-    
-    j .end_word_exec
+        jx a10
     .comptime:
         l8ui a10, a9, 4                 # offset 4 -> is_immediate
         bnez a10, .not_immediate        # IF 0 -> not_immediate ELSE 1 -> is_immediate
         immediate:
             l32i a10, a9, 8                 # WORD code addr
-            callx4 a10
-        j .end_word_exec
+            jx a10
         .not_immediate:
             # TODO: add word to code_space
 
+.align 4
 .end_word_exec:
     beq a5, a4, .end
     j .next_tok

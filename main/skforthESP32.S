@@ -30,7 +30,7 @@ input_len:
 
 .align 4
 app_main:
-    entry a1, 32
+    #entry a1, 32
 
     movi a2, mode
     movi a3, INTERPRET
@@ -154,4 +154,6 @@ interpret_line:
 
     beqi a4, 1, .print_skhandle
 
-    j lexer
+    call0 lexer
+
+    j .print_skhandle

@@ -14,7 +14,6 @@ stack:
     .global spush
     .global spop
 
-
 .align 4
 init_stack:
     entry a1, 32
@@ -25,7 +24,7 @@ init_stack:
     retw
 
 .align 4
-spush: # (phy a14 | log a2 -> val)
+spush: # (phy a14 | log a4 -> val)
     entry a1, 32
     mov a9, a11    # stack
 
@@ -33,14 +32,14 @@ spush: # (phy a14 | log a2 -> val)
     mull a8, a8, a10
     add a9, a9, a8  # stack[i]
 
-    s32i a2, a9, 0
+    s32i a4, a9, 0
 
     addi a10, a10, 1
 
     retw
 
 .align 4
-spop: # return (phy a14 | log a2 -> val)
+spop: # return (phy a14 | log a4 -> val)
     entry a1, 32
     mov a9, a11    # stack
 
@@ -50,6 +49,6 @@ spop: # return (phy a14 | log a2 -> val)
     mull a8, a8, a10
     add a9, a9, a8  # stack[i]
 
-    l32i a2, a9, 0
+    l32i a4, a9, 0
 
     retw
