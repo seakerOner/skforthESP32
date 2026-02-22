@@ -11,8 +11,6 @@ stack:
 
     .section .text
     .global init_stack
-    .global spush
-    .global spop
 
 .align 4
 init_stack:
@@ -22,6 +20,11 @@ init_stack:
     movi a11, stack
 
     retw
+
+    .section .iram1.text, "ax"
+    .global spush
+    .global spop
+    .global slen 
 
 .align 4
 spush: # (phy a14 | log a4 -> val)
@@ -33,7 +36,6 @@ spush: # (phy a14 | log a4 -> val)
     add a9, a9, a8  # stack[i]
 
     s32i a4, a9, 0
-
     addi a10, a10, 1
 
     retw
@@ -50,5 +52,19 @@ spop: # return (phy a14 | log a4 -> val)
     add a9, a9, a8  # stack[i]
 
     l32i a4, a9, 0
+
+    retw
+
+# get stack length. this is primarily used for the `depth` WORD
+.align 4
+slen:
+    entry a1, 32
+    mov a9, a11 # stack
+    movi a8, 4
+    mull a8, a8, a10
+    add a9, a9, a8 # stack[i]
+
+    s32i a10, a9, 0
+    addi a10, a10, 1
 
     retw

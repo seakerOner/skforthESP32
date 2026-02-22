@@ -20,9 +20,6 @@ commands:
     idf.py monitor
 ```
 
-# Docs
+# Developer Notes
 
-- Xtensa ISA
-    - <https://dl.espressif.com/github_assets/espressif/xtensa-isa-doc/releases/download/latest/Xtensa.pdf>
-- ESP32 TRM
-    - <https://documentation.espressif.com/esp32_technical_reference_manual_en.pdf>
+For some insight into the arquiteture and design decisions of Skforth's internals the [DEV.md](./DEV.md) file is available.
