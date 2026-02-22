@@ -20,19 +20,19 @@ skforthESP32 separates execution into **two domains**, exploiting Xtensa registe
 ### 1 - System / Lexer / UART Domain
 
 Rooted at `app_main` (call0 ABI), this domain handles:
-    - UART initialization and console I/O
-    - Input buffering
-    - Lexing user input into tokens
+- UART initialization and console I/O
+- Input buffering
+- Lexing user input into tokens
 
 **Calling conventions**:
-    - UART helpers (`uart_print`, `uart_putc`, `uart_trygetc`, `uart_printn`) use `call8`.
-    - Expected invariant register offset: **8**
+- UART helpers (`uart_print`, `uart_putc`, `uart_trygetc`, `uart_printn`) use `call8`.
+- Expected invariant register offset: **8**
 
 Invariant registers in this domain:
-    - a2                          -> input_len
-    - a3                          -> input_buffer
-    - a14 (logical a6 @ offset 8) -> UART FIFO address
-    - a15 (logical a7 @ offset 8) -> UART status address
+- a2                          -> input_len
+- a3                          -> input_buffer
+- a14 (logical a6 @ offset 8) -> UART FIFO address
+- a15 (logical a7 @ offset 8) -> UART status address
 
 > Note:
 > All UART subroutines assume offset 8. This tree never mixes with the VM window chain.
@@ -67,8 +67,8 @@ Stack helpers are invoked using:
 Expected invariant register offset: **12**
 
 Invariant registers in this domain:
-    - a22 (logical a10 @ offset 12) -> stack pointer index
-    - a23 (logical a11 @ offset 12) -> stack base address
+- a22 (logical a10 @ offset 12) -> stack pointer index
+- a23 (logical a11 @ offset 12) -> stack base address
 
 Stack helpers depend on this offset being stable.
 
