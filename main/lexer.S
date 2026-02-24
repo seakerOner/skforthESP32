@@ -81,9 +81,86 @@ step_dic: # a9 -> word base addr
 
 tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
     # try to transform token into a number, add it to the stack and step orelse fail
+    # instructions BLTUI and BGEUI can't accept immediate values of the range desired in ASCII conversion
+    # that's why we load the values into registers as penalty and use BLTU and BGEU
 
-    # TODO: 
+    movi a10, num_base
+    l8ui a10, a10, 0
+    movi a9, 0      # counter
+    movi a11, 0     # result value
+    # while ( valid char )
+    movi a13, HEXADECIMAL
+    beq a10, a13, .hex_conversion_step
+    .dec_conversion_step:    # if not hex, naturally will be decimal
+    add a12, a8, a9                 # base token addr + index
+    l8ui a12, a12, 0                # token[index]
+    movi a13, 0x2F
+    bltu a12, a13, .tok_not_num     # <= 47
+    movi a13, 0x3A
+    bgeu a12, a13, .tok_not_num     # >= 58
+    # valid decimal number, convert
+    movi a13, 0x30
+    xor a12, a12, a13
+    mull a11, a11, a10       # val * base
+    add a11, a11, a12        # val = val * base + num
 
+    addi a9, a9, 1
+    bne a9, a7, .dec_conversion_step
+    j .send_num_to_stack    
+    .hex_conversion_step:
+    add a12, a8, a9
+    l8ui a12, a12, 0
+    movi a13, 0x2F
+    bltu a12, a13, .tok_not_num       # <= 47
+    movi a13, 0x67
+    bgeu a12, a13, .tok_not_num       # >= 'g'
+    movi a13, 0x39
+    bltu a12, a13, .is_hex_numerical
+    movi a13, 0x61
+    bgeu a12, a13, .is_hex_lowercase
+    movi a13, 0x40
+    bltu a12, a13, .tok_not_num
+    movi a13, 0x46
+    bltu a12, a13, .is_hex_uppercase
+    
+    .is_hex_numerical:
+    movi a13, 0x30
+    xor a12, a12, a13
+    mull a11, a11, a10      # val * base
+    add a11, a11, a12       # val = val * base + num
+    j .next_num_hex
+
+    .is_hex_lowercase:
+    movi a13, 0x60 
+    xor a12, a12, a13
+    addi a12, a12, 9
+    mull a11, a11, a10      # val * base
+    add a11, a11, a12       # val = val * base + num
+    j .next_num_hex
+
+    .is_hex_uppercase:
+    movi a13, 0x40
+    xor a12, a12, a13
+    addi a12, a12, 9
+    mull a11, a11, a10      # val * base
+    add a11, a11, a12       # val = val * base + num
+
+    .next_num_hex:
+    addi a9, a9, 1
+    bne a9, a7, .hex_conversion_step
+
+    .send_num_to_stack:
+    # a wrap subroutine is used in the same fashion on primitive WORDS to enable register access
+    call8 .lexer_stack_wrap 
+    j .print_skhandle               #   reset
+        .align 4
+        .lexer_stack_wrap:
+        entry a1, 32 
+        mov a8, a3                  #   a3 @ offset 8 = a11 @ offset 0
+        call4 spush
+        retw
+
+    .tok_not_num:
     mov a10, a8
     mov a11, a7
     call8 uart_printn

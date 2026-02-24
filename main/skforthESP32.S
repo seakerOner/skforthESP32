@@ -1,6 +1,8 @@
 # TODO: add word tracing when error occurs for better debugging
 
 .section .rodata
+    .global DECIMAL 
+    .global HEXADECIMAL
 
 msg:
 .asciz "Welcome to skforthESP32! (max 126 char per line)\n"
@@ -8,8 +10,12 @@ msg:
 sk_handle:
 .asciz "skforth>"
 
+.equ DECIMAL, 10
+.equ HEXADECIMAL, 16
+
     .section .bss
     .global mode
+    .global num_base
 
 .align 4
 mode:
@@ -23,6 +29,10 @@ input_buffer:
 input_len:
     .space 1
 
+.align 4
+num_base:
+    .space 1
+
     .section .text
 
 .global app_main
@@ -30,7 +40,11 @@ input_len:
 
 .align 4
 app_main:
-    #entry a1, 32
+    entry a1, 32
+
+    movi a2, num_base
+    movi a3, DECIMAL
+    s8i a3, a2, 0
 
     movi a2, mode
     movi a3, INTERPRET
