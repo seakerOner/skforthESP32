@@ -37,6 +37,69 @@ name_over:
 .global name_depth
 name_depth:
     .ascii "depth"
+.global name_dot
+name_dot:
+    .ascii "."
+
+    .section .bss
+    .global translation_buff
+    .global translation_endbuff
+.align 4
+translation_buff:
+    .space 11           # max 32 bit number is 4,294,967,295 = 10 digits = 10 bytes + 1 bytes for null terminator
+.align 4
+translation_endbuff:
+    .space 4            # address of the end of array
+
+    .section .text
+
+.global code_dot
+.align 4
+code_dot:
+    call8 .dot_wrap
+    # TODO: convert from number to ascii format
+
+    # a12 -> value from stack
+    movi a13, translation_endbuff
+    l32i a13, a13, 0
+
+    beqz a12, .dot_zero
+
+    movi a10, HEXADECIMAL
+    movi a11, num_base
+    l8ui a11, a11, 0
+    beq a10, a11, .dot_hex
+    # decimal conversion if not hex
+    .dot_dec:
+    remu a10, a12, a11          # digit = value % base
+    quou a12, a12, a11          # value = value / base
+
+    movi a9, 0x30
+    or a10, a10, a9         # dec to ASCII
+    addi a13, a13, -1
+    s8i a10, a13, 0
+    bnez a12, .dot_dec
+    j .end_dot
+    .dot_hex:
+
+    .dot_zero:
+        movi a10, 0x30          # ascii 0
+        call8 uart_putc
+        movi a10, .end_word_exec
+        jx a10
+
+    .end_dot:
+    # print buffer
+    mov a10, a13
+    call8 uart_print
+    movi a10, .end_word_exec
+    jx a10
+    .align 4 
+    .dot_wrap:
+    entry a1, 32 
+    call4 spop
+    mov a4, a8
+    retw
 
     .section .iram1.text, "ax"
 

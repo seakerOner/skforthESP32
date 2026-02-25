@@ -42,6 +42,13 @@ num_base:
 app_main:
     entry a1, 32
 
+    movi a2, translation_buff
+    movi a3, 0                     # null terminator
+    s8i a3, a2, 11
+    movi a3, translation_endbuff
+    addi a2, a2, 11                 # last byte slot of buffer 
+    s32i a2, a3, 0
+
     movi a2, num_base
     movi a3, DECIMAL
     s8i a3, a2, 0
@@ -59,6 +66,12 @@ app_main:
     s32i a4, a3, 0
 
     # add primitives to DIC
+    movi a10, name_dot
+    movi a11, 1
+    movi a12, code_dot
+    movi a13, 0
+    call0 dic_addprim
+
     movi a10, name_dup
     movi a11, 3
     movi a12, code_dup
@@ -106,11 +119,13 @@ app_main:
     # phy a3                         -> input_buffer    addr
     # phy a14 (logic  a6 offset  8 ) -> uart fifo       addr
     # phy a15 (logic  a7 offset  8 ) -> uart status     addr
-    # phy a22 (logic a10 offset 12 ) -> sp index     (max 7)
+    #
+    # The registers below are not in effect.
+    # phy a22 (logic a10 offset 12 ) -> sp index     (max 7) 
     # phy a23 (logic a11 offset 12 ) -> stack base      addr      
 
     call8  init_uart
-    call12 init_stack
+    # call12 init_stack
     movi a2, input_len
     movi a3, input_buffer
 

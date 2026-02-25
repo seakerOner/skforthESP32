@@ -14,15 +14,15 @@ unknown_word_err:
 lexer: # phy a2 -> len | phy a3 -> buffer
     l8ui a4, a2, 0
 
-    addi a4, a4, -1     # ignore cr
-    movi a5, 0          # loop counter
+    addi a4, a4, -1                 # ignore cr
+    movi a5, 0                      # loop counter
 
 .next_tok:
-    movi a7, 0          # current token len counter
+    movi a7, 0                      # current token len counter
 .loop:
-    add a6, a3, a5     # buffer[i] addr
+    add a6, a3, a5                  # buffer[i] addr
     l8ui a6, a6, 0
-    beqi a6, 32, .step  # buffer[i] == space
+    beqi a6, 32, .step              # buffer[i] == space
         
     beqz a7, save_tok_start
 
@@ -53,22 +53,22 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     movi a9, latest_word
     l32i a9, a9, 0
     3:
-    beqi a9, 0, tok_not_in_dic      # reached last word 
+    beqi a9, 0, tok_not_in_dic          # reached last word 
 
-    l8ui a10, a9, 5         # word len
+    l8ui a10, a9, 5                     # word len
 
     bne a10, a7, step_dic
     
 
     # check if token and name are the same
-    movi a10, 0     # counter
+    movi a10, 0                         # counter
     .step_tok_char:
     beq a10, a7, exec_word 
-    addi a13, a10, 12       # offset 12 for base string + current char
-    add a13, a9, a13        # word name[i] addr
+    addi a13, a10, 12                   # offset 12 for base string + current char
+    add a13, a9, a13                    # word name[i] addr
     l8ui a13, a13, 0        
 
-    add a11, a8, a10    # token[i]
+    add a11, a8, a10                    # token[i]
     l8ui a11, a11, 0    
 
     addi a10, a10, 1
@@ -76,7 +76,7 @@ found_tok: # a7 -> tokenlen | a8 -> token addr
     j .step_tok_char
 
 step_dic: # a9 -> word base addr
-    l32i a9, a9, 0                  # WORD -> prev word
+    l32i a9, a9, 0                      # WORD -> prev word
     j 3b
 
 tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
@@ -86,23 +86,24 @@ tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
 
     movi a10, num_base
     l8ui a10, a10, 0
-    movi a9, 0      # counter
-    movi a11, 0     # result value
-    # while ( valid char )
+    movi a9, 0                          # counter
+    movi a11, 0                         # result value
+
+    # while ( valid char ) convert char to num
     movi a13, HEXADECIMAL
     beq a10, a13, .hex_conversion_step
     .dec_conversion_step:    # if not hex, naturally will be decimal
-    add a12, a8, a9                 # base token addr + index
-    l8ui a12, a12, 0                # token[index]
+    add a12, a8, a9                     # base token addr + index
+    l8ui a12, a12, 0                    # token[index]
     movi a13, 0x2F
-    bltu a12, a13, .tok_not_num     # <= 47
+    bltu a12, a13, .tok_not_num         # <= 47
     movi a13, 0x3A
-    bgeu a12, a13, .tok_not_num     # >= 58
+    bgeu a12, a13, .tok_not_num         # >= 58
     # valid decimal number, convert
     movi a13, 0x30
     xor a12, a12, a13
-    mull a11, a11, a10       # val * base
-    add a11, a11, a12        # val = val * base + num
+    mull a11, a11, a10                  # val * base
+    add a11, a11, a12                   # val = val * base + num
 
     addi a9, a9, 1
     bne a9, a7, .dec_conversion_step
@@ -111,9 +112,9 @@ tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
     add a12, a8, a9
     l8ui a12, a12, 0
     movi a13, 0x2F
-    bltu a12, a13, .tok_not_num       # <= 47
+    bltu a12, a13, .tok_not_num         # <= 47
     movi a13, 0x67
-    bgeu a12, a13, .tok_not_num       # >= 'g'
+    bgeu a12, a13, .tok_not_num         # >= 'g'
     movi a13, 0x39
     bltu a12, a13, .is_hex_numerical
     movi a13, 0x61
@@ -126,24 +127,24 @@ tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
     .is_hex_numerical:
     movi a13, 0x30
     xor a12, a12, a13
-    mull a11, a11, a10      # val * base
-    add a11, a11, a12       # val = val * base + num
+    mull a11, a11, a10                  # val * base
+    add a11, a11, a12                   # val = val * base + num
     j .next_num_hex
 
     .is_hex_lowercase:
     movi a13, 0x60 
     xor a12, a12, a13
     addi a12, a12, 9
-    mull a11, a11, a10      # val * base
-    add a11, a11, a12       # val = val * base + num
+    mull a11, a11, a10                  # val * base
+    add a11, a11, a12                   # val = val * base + num
     j .next_num_hex
 
     .is_hex_uppercase:
     movi a13, 0x40
     xor a12, a12, a13
     addi a12, a12, 9
-    mull a11, a11, a10      # val * base
-    add a11, a11, a12       # val = val * base + num
+    mull a11, a11, a10                  # val * base
+    add a11, a11, a12                   # val = val * base + num
 
     .next_num_hex:
     addi a9, a9, 1
@@ -180,7 +181,7 @@ exec_word: # a9 -> word base addr
 
     bnez a10, .comptime             # IF 0 -> interpret ELSE 1 -> comptime
     interpret:
-        l32i a10, a9, 8             # WORD code addr
+        l32i a10, a9, 8                 # WORD code addr
         jx a10
     .comptime:
         l8ui a10, a9, 4                 # offset 4 -> is_immediate
