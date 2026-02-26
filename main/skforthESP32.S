@@ -4,6 +4,7 @@
     .global DECIMAL 
     .global HEXADECIMAL
     .global msg_ok
+    .global PSRAM
 msg_ok:
     .asciz "  ok "
 
@@ -13,6 +14,7 @@ msg:
 sk_handle:
 .asciz "skforth>"
 
+.equ PSRAM, 0x3F800000
 .equ DECIMAL, 10
 .equ HEXADECIMAL, 16
 
@@ -44,6 +46,10 @@ num_base:
 .align 4
 app_main:
     entry a1, 32
+
+    movi a2, here_addr
+    movi a3, PSRAM
+    s32i a3, a2, 0
 
     movi a2, translation_buff
     movi a3, 0                     # null terminator
@@ -152,6 +158,19 @@ app_main:
     movi a12, code_storebyte
     movi a13, 0
     call0 dic_addprim
+
+    movi a10, name_alloc
+    movi a11, 5
+    movi a12, code_alloc
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_allocbytes
+    movi a11, 6
+    movi a12, code_allocbytes
+    movi a13, 0
+    call0 dic_addprim
+
 
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr

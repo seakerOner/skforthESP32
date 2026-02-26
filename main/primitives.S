@@ -17,7 +17,6 @@
 # offset 12  : name ascii     ( 20 max )
     .section .rodata
     .global cr_text
-    .equ PSRAM, 0x3F800000
 cr_text:
     .asciz "\n"
 msg_overflow:
@@ -52,6 +51,12 @@ name_depth:
 .global name_here 
 name_here:
     .ascii "HERE"
+.global name_alloc
+name_alloc:
+    .ascii "ALLOC"
+.global name_allocbytes
+name_allocbytes:
+    .ascii "ALLOCB"
 .global name_at
 name_at:
     .ascii "@"
@@ -71,7 +76,11 @@ name_dot:
     .section .bss
     .global translation_buff
     .global translation_endbuff
+    .global here_addr
 
+.align 4 
+here_addr:
+    .space 4
 .align 4
 translation_buff:
     .space 11           # max 32 bit number is 4,294,967,295 = 10 digits = 10 bytes + 1 bytes for null terminator
@@ -110,9 +119,46 @@ code_here:
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
     .here_wrap:
     entry a1, 32
-    movi a8, PSRAM
+    movi a8, here_addr
+    l32i a8, a8, 0
     call4 spush
     beqz a9, FLASH_err_of
+    retw
+
+.global code_alloc
+.align 4
+code_alloc:
+    call8 .alloc_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .alloc_wrap:
+    entry a1, 32
+    call4 spop              # num cells (32bits)
+    beqz a9, FLASH_err_uf
+    movi a9, here_addr
+    l32i a10, a9, 0
+    movi a12, 32
+    mull a8, a8, a12
+    add a8, a10, a8
+    s32i a8, a9, 0
+    retw
+
+.global code_allocbytes
+.align 4
+code_allocbytes:
+    call8 .allocbytes_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .allocbytes_wrap:
+    entry a1, 32 
+    call4 spop
+    beqz a9, FLASH_err_uf
+    movi a9, here_addr
+    l32i a10, a9, 0
+    movi a12, 8 
+    mull a8, a8, a12 
+    add a8, a10, a8 
+    s8i a8, a9, 0
     retw
 
 .global code_dot
