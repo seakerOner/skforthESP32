@@ -64,6 +64,7 @@ translation_endbuff:
 
     .section .text
     .extern esp_restart
+    .global FLASH_err_of
 
 .align 4
 FLASH_err_of:   # a3 -> return addr

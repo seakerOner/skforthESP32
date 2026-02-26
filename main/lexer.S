@@ -174,6 +174,7 @@ tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
         entry a1, 32 
         mov a8, a3                  #   a3 @ offset 8 = a11 @ offset 0
         call4 spush
+        beqz a9, FLASH_err_of 
         retw
 
     .tok_not_num:
