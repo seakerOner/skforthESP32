@@ -18,7 +18,7 @@ sp:
 
 # TODO:
 # invariant registers here are invalid because when switching windows a10, a11 are not naturally "saved" 
-# by the entry/retw combo. Normally it only restores a2-a7. manually saving the context could be an option.
+# by the entry/retw combo. Normally it only restores a2-a6. manually saving the context could be an option.
 # But as being devil's advocate maybe this is over-engineering and won't give as much performance as I naively may expect.
 # Something to thinker about and test.
 
@@ -43,6 +43,8 @@ spush: # (phy a16 | log a4 @ offset 12 -> val)
     movi a10, sp
     l8ui a10, a10, 0
 
+    beqi a10, 8, .err_push
+
     movi a9, stack    # stack
 
     movi a8, 4
@@ -54,6 +56,10 @@ spush: # (phy a16 | log a4 @ offset 12 -> val)
 
     movi a11, sp
     s8i a10, a11, 0
+    movi a5, 1          # ok
+    retw
+    .err_push:
+    movi a5, 0          # err
     retw
 
 .align 4
@@ -62,6 +68,8 @@ spop: # return (phy a17 | log a4 @ offset 12 -> val)
 
     movi a10, sp
     l8ui a10, a10, 0
+
+    beqz a10, .err_pop
 
     movi a9, stack    # stack
 
@@ -76,6 +84,10 @@ spop: # return (phy a17 | log a4 @ offset 12 -> val)
     movi a11, sp
     s8i a10, a11, 0
 
+    movi a5, 1          # ok
+    retw
+    .err_pop:
+    movi a5, 0          # err
     retw
 
 # get stack length. this is primarily used for the `depth` WORD

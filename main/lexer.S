@@ -153,6 +153,21 @@ tok_not_in_dic: # a7 -> tokenlen | a8 -> token addr
     .send_num_to_stack:
     # a wrap subroutine is used in the same fashion on primitive WORDS to enable register access
     call8 .lexer_stack_wrap 
+
+    movi a10, msg_ok
+    call8 uart_print
+
+    movi a10, sp
+    l8ui a10, a10, 0
+    movi a11, 0x30
+    or a10, a10, a11            # number to ASCII decimal
+    movi a11, 1
+    call8 uart_putc
+
+    movi a10, cr_text
+    call8 uart_print
+
+
     j .print_skhandle               #   reset
         .align 4
         .lexer_stack_wrap:

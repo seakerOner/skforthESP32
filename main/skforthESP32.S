@@ -3,6 +3,9 @@
 .section .rodata
     .global DECIMAL 
     .global HEXADECIMAL
+    .global msg_ok
+msg_ok:
+    .asciz "  ok "
 
 msg:
 .asciz "Welcome to skforthESP32! (max 126 char per line)\n"
@@ -69,6 +72,12 @@ app_main:
     movi a10, name_dot
     movi a11, 1
     movi a12, code_dot
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_cr
+    movi a11, 2
+    movi a12, code_cr
     movi a13, 0
     call0 dic_addprim
 
@@ -184,5 +193,18 @@ interpret_line:
     beqi a4, 1, .print_skhandle
 
     call0 lexer
+
+    movi a10, msg_ok
+    call8 uart_print
+
+    movi a10, sp
+    l8ui a10, a10, 0
+    movi a11, 0x30
+    or a10, a10, a11            # number to ASCII decimal
+    movi a11, 1
+    call8 uart_putc
+
+    movi a10, cr_text
+    call8 uart_print
 
     j .print_skhandle

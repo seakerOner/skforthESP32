@@ -8,6 +8,7 @@
 .section .text
 .global init_uart
 .global uart_print
+.global uart_print0
 .global uart_printn
 .global uart_trygetc
 .global uart_putc
@@ -43,6 +44,28 @@ uart_print: # (reg2 -> string)
 
 .done:
     retw
+
+.align 4
+uart_print0: # (reg2 -> string)
+    mov a3, a2               # string
+
+.loop0:
+    l8ui a2, a3, 0
+    beqz a2, .done0
+
+.wait_fifo0:
+    l32i a4, a7, 0
+    extui a4, a4, 16, 8      # TXFIFO count
+    movi a5, UART_FIFO_LIMIT           
+    bge a4, a5, .wait_fifo0
+
+    s8i a2, a6, 0            # write byte
+    addi a3, a3, 1
+    j .loop0
+
+.done0:
+    ret
+
 
 .align 4
 uart_trygetc:
