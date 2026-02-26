@@ -17,6 +17,7 @@
 # offset 12  : name ascii     ( 20 max )
     .section .rodata
     .global cr_text
+    .equ PSRAM, 0x3F800000
 cr_text:
     .asciz "\n"
 msg_overflow:
@@ -48,6 +49,21 @@ name_over:
 .global name_depth
 name_depth:
     .ascii "depth"
+.global name_here 
+name_here:
+    .ascii "HERE"
+.global name_at
+name_at:
+    .ascii "@"
+.global name_atbyte
+name_atbyte:
+    .ascii "b@"
+.global name_store
+name_store:
+    .ascii "!"
+.global name_storebyte
+name_storebyte:
+    .ascii "b!"
 .global name_dot
 name_dot:
     .ascii "."
@@ -55,6 +71,7 @@ name_dot:
     .section .bss
     .global translation_buff
     .global translation_endbuff
+
 .align 4
 translation_buff:
     .space 11           # max 32 bit number is 4,294,967,295 = 10 digits = 10 bytes + 1 bytes for null terminator
@@ -84,6 +101,19 @@ code_cr:
     call8 uart_print
     movi a10, .end_word_exec
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+
+.global code_here
+.align 4
+code_here:
+    call8 .here_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .here_wrap:
+    entry a1, 32
+    movi a8, PSRAM
+    call4 spush
+    beqz a9, FLASH_err_of
+    retw
 
 .global code_dot
 .align 4
@@ -259,4 +289,63 @@ code_depth:
     movi a10, .end_word_exec
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
 
+.global code_at
+.align 4
+code_at:
+    call8 .at_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .at_wrap:
+    entry a1, 32 
+    call4 spop
+    beqz a9, IRAM_err_uf
+    l32i a8, a8, 0
+    call4 spush
+    retw
+
+.global code_atbyte
+.align 4
+code_atbyte:
+    call8 .atbyte_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .atbyte_wrap:
+    entry a1, 32 
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    l8ui a8, a8, 0
+    call4 spush
+    retw
+
+.global code_store 
+.align 4
+code_store:
+    call8 store_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    store_wrap:
+    entry a1, 32
+    call4 spop
+    beqz a9, IRAM_err_uf
+    mov a10, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    s32i a10, a8, 0
+    retw
+
+.global code_storebyte
+.align 4
+code_storebyte:
+    call8 storebyte_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    storebyte_wrap:
+    entry a1, 32
+    call4 spop
+    beqz a9, IRAM_err_uf
+    mov a10, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    s8i a10, a8, 0
+    retw
 

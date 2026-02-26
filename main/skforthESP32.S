@@ -123,6 +123,36 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
+    movi a10, name_here
+    movi a11, 4
+    movi a12, code_here
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_at
+    movi a11, 1
+    movi a12, code_at
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_atbyte
+    movi a11, 2
+    movi a12, code_atbyte
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_store
+    movi a11, 1
+    movi a12, code_store
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_storebyte
+    movi a11, 2
+    movi a12, code_storebyte
+    movi a13, 0
+    call0 dic_addprim
+
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr
