@@ -24,6 +24,11 @@ msg_overflow:
 msg_underflow:
     .asciz "ERROR: Stack underflow.\n"
 
+msg_notcomptime:
+    .asciz "ERROR: Not in COMPTIME mode\n"
+msg_notinterpret:
+    .asciz "ERROR: Not in INTERPRET mode\n"
+
     .global name_lessthan
 name_lessthan:
     .ascii "<"
@@ -81,9 +86,6 @@ name_here:
 .global name_alloc
 name_alloc:
     .ascii "ALLOC"
-.global name_allocbytes
-name_allocbytes:
-    .ascii "ALLOCB"
 .global name_at
 name_at:
     .ascii "@"
@@ -102,6 +104,12 @@ name_dot:
 .global name_dotstack
 name_dotstack:
     .ascii ".s"
+.global name_comma
+name_comma:
+    .ascii ":"
+.global name_semicolon
+name_semicolon:
+    .ascii ";"
 
     .section .bss
     .global translation_buff
@@ -157,7 +165,7 @@ code_here:
 
 .global code_alloc
 .align 4
-code_alloc:
+code_alloc:     # accepts a number of bytes (8 bits)
     call8 .alloc_wrap
     movi a10, .end_word_exec
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
@@ -167,28 +175,8 @@ code_alloc:
     beqz a9, FLASH_err_uf
     movi a9, here_addr
     l32i a10, a9, 0
-    movi a12, 32
-    mull a8, a8, a12
     add a8, a10, a8
     s32i a8, a9, 0
-    retw
-
-.global code_allocbytes
-.align 4
-code_allocbytes:
-    call8 .allocbytes_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .allocbytes_wrap:
-    entry a1, 32 
-    call4 spop
-    beqz a9, FLASH_err_uf
-    movi a9, here_addr
-    l32i a10, a9, 0
-    movi a12, 8 
-    mull a8, a8, a12 
-    add a8, a10, a8 
-    s8i a8, a9, 0
     retw
 
 .global code_dotstack
@@ -356,6 +344,48 @@ code_dup:
     beqz a9, IRAM_err_of
     retw
 
+.global code_semicolon
+.align 4
+code_semicolon:
+    movi a12, mode
+    l8ui a12, a12, 0
+    beqz a12, .semicolon_fail            
+
+    call8 .wrap_semicolon
+    movi a12, mode
+    movi a10, 0
+    s8i a10, a12, 0             # set to INTERPRET 
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .semicolon_fail:
+    movi a10, msg_notcomptime
+    call8 uart_print
+    call0 esp_restart
+    .align 4
+    .wrap_semicolon:
+    entry a1, 32
+    call8 codeadd0
+    retw
+
+.global code_comma
+.align 4
+code_comma:
+    movi a12, mode
+    l8ui a12, a12, 0
+    bnez a12, .comma_comptime
+    movi a12, 1
+    movi a13, mode
+    s8i a12, a13, 0             # set to COMPTIME
+
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .comma_comptime:
+    movi a10, msg_notinterpret
+    call8 uart_print
+    call0 esp_restart
+
+
+
 .global code_plus
 .align 4
 code_plus:
@@ -453,9 +483,9 @@ code_and:
     beqz a9, IRAM_err_uf
     and a8, a11, a8
     call4 spush
+    beqz a9, IRAM_err_of
     movi a2, 1
     retw
-    beqz a9, IRAM_err_of
 
 .global code_lsh
 .align 4

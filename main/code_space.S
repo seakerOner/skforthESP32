@@ -10,8 +10,10 @@ code_space:
 code_p:
     .space 4
 
-    .section .text
+    #.section .text
+    .section .iram1.text, "ax"
     .global codeadd
+    .global codeadd0
 .align 4
 codeadd:       # a2 -> addr to push
     entry a1, 32
@@ -41,4 +43,5 @@ codeadd0:
     addi a10, a10, 1
     movi a10, code_p
     s32i a10, a10, 0
+    retw
 

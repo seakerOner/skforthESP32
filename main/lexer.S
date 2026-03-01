@@ -190,13 +190,13 @@ exec_word: # a9 -> word base addr
         jx a10
     .comptime:
         l8ui a10, a9, 4                 # offset 4 -> is_immediate
-        bnez a10, .not_immediate        # IF 0 -> not_immediate ELSE 1 -> is_immediate
+        beqz a10, .not_immediate        # IF 0 -> not_immediate ELSE 1 -> is_immediate
         immediate:
             l32i a10, a9, 8                 # WORD code addr
             jx a10
         .not_immediate:
             l32i a10, a9, 8                 # WORD code addr
-            call12 codeadd
+            call8 codeadd
             # TODO: add word to code_space
 
 .align 4

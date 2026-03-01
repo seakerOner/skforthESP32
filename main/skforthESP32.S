@@ -164,12 +164,6 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
-    movi a10, name_allocbytes
-    movi a11, 6
-    movi a12, code_allocbytes
-    movi a13, 0
-    call0 dic_addprim
-
     movi a10, name_dotstack
     movi a11, 2
     movi a12, code_dotstack
@@ -210,6 +204,18 @@ app_main:
     movi a11, 1
     movi a12, code_minus
     movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_semicolon
+    movi a11, 1
+    movi a12, code_semicolon
+    movi a13, 1                 # immediate
+    call0 dic_addprim
+
+    movi a10, name_comma
+    movi a11, 1
+    movi a12, code_comma
+    movi a13, 1                 
     call0 dic_addprim
 
 
