@@ -195,6 +195,8 @@ exec_word: # a9 -> word base addr
             l32i a10, a9, 8                 # WORD code addr
             jx a10
         .not_immediate:
+            l32i a10, a9, 8                 # WORD code addr
+            call12 codeadd
             # TODO: add word to code_space
 
 .align 4

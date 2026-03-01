@@ -7,7 +7,6 @@
     .global PSRAM
 msg_ok:
     .asciz "  ok "
-
 msg:
 .asciz "Welcome to skforthESP32! (max 126 char per line)\n"
 
@@ -171,6 +170,11 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
+    movi a10, name_dotstack
+    movi a11, 2
+    movi a12, code_dotstack
+    movi a13, 0
+    call0 dic_addprim
 
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
@@ -225,7 +229,7 @@ app_main:
 
 .backspace:
     beqz a4, .delay
-    call8 uart_putc
+    call8 uart_putc             # write on console what user types 
 
     addi a4, a4, -1
     s8i a4, a2, 0

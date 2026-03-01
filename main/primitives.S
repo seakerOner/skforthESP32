@@ -24,6 +24,16 @@ msg_overflow:
 msg_underflow:
     .asciz "ERROR: Stack underflow.\n"
 
+    .global name_lessthan
+name_lessthan:
+    .ascii "<"
+    .global name_morethan
+name_morethan:
+    .ascii ">"
+    .global name_spacechar
+name_spacechar:
+    .ascii " "
+
 .global name_cr 
 name_cr:
     .ascii "cr"
@@ -72,6 +82,12 @@ name_storebyte:
 .global name_dot
 name_dot:
     .ascii "."
+.global name_dotstack
+name_dotstack:
+    .ascii ".s"
+
+test:
+    .asciz "BANANA"
 
     .section .bss
     .global translation_buff
@@ -159,6 +175,93 @@ code_allocbytes:
     mull a8, a8, a12 
     add a8, a10, a8 
     s8i a8, a9, 0
+    retw
+
+.global code_dotstack
+.align 4
+code_dotstack:
+    movi a10, name_lessthan
+    l8ui a10, a10, 0
+    call8 uart_putc
+
+    movi a10, sp        
+    l8ui a10, a10, 0
+    movi a11, 0x30
+    or a10, a10, a11
+    call8 uart_putc
+
+    movi a10, name_morethan
+    l8ui a10, a10, 0
+    call8 uart_putc
+
+    movi a10, name_spacechar
+    l8ui a10, a10, 0
+    call8 uart_putc
+
+    call8 .dotstack_wrap
+
+    .after_dotstackwrap:
+    movi a10, .end_word_exec
+    jx a10
+
+    .align 4
+    .dotstack_wrap:
+    entry a1, 32
+    movi a4, sp        
+    l8ui a4, a4, 0
+    .next_val_stack:
+    beqz a4, .end_dotstack
+    addi a4, a4, -1
+    movi a14, stack
+    movi a10, 4
+    mull a10, a4, a10
+    add a12, a14, a10
+    l32i a12, a12, 0
+
+    # a12 -> value 
+
+    movi a13, translation_endbuff
+    l32i a13, a13, 0
+
+    beqz a12, .dotstack_zero
+
+    movi a10, HEXADECIMAL
+    movi a11, num_base
+    l8ui a11, a11, 0
+    beq a10, a11, .dotstack_hex
+
+    # decimal conversion if not hex
+    .dotstack_dec:
+    remu a10, a12, a11          # digit = value % base
+    quou a12, a12, a11          # value = value / base
+
+    movi a9, 0x30
+    or a10, a10, a9         # dec to ASCII
+    addi a13, a13, -1
+    s8i a10, a13, 0
+    bnez a12, .dotstack_dec
+    j .end_digit
+    .dotstack_hex:
+    # TODO:
+
+    .dotstack_zero:
+        movi a12, 0x30          # ascii 0
+        call8 uart_putc12
+        movi a12, name_spacechar
+        l8ui a12, a12, 0
+        call8 uart_putc12
+        j .next_val_stack
+
+    .end_digit:
+    #print buffer
+    mov a12, a13
+    call8 uart_print12
+    movi a12, name_spacechar
+    l8ui a12, a12, 0
+    call8 uart_putc12
+    j .next_val_stack
+
+    .end_dotstack:
     retw
 
 .global code_dot
