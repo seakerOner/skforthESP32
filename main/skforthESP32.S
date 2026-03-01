@@ -176,6 +176,43 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
+    movi a10, name_xor
+    movi a11, 3
+    movi a12, code_xor
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_or
+    movi a11, 2
+    movi a12, code_or
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_and
+    movi a11, 3
+    movi a12, code_and
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_lsh
+    movi a11, 2
+    movi a12, code_lsh
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_rsh
+    movi a11, 2
+    movi a12, code_rsh
+    movi a13, 0
+    call0 dic_addprim
+
+    movi a10, name_minus
+    movi a11, 1
+    movi a12, code_minus
+    movi a13, 0
+    call0 dic_addprim
+
+
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr

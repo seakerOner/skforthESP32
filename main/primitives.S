@@ -33,8 +33,7 @@ name_morethan:
     .global name_spacechar
 name_spacechar:
     .ascii " "
-
-.global name_cr 
+    .global name_cr 
 name_cr:
     .ascii "cr"
 .global name_dup
@@ -43,6 +42,24 @@ name_dup:
 .global name_plus
 name_plus:
     .ascii "+"
+.global name_minus
+name_minus:
+    .ascii "-"
+.global name_xor
+name_xor:
+    .ascii "xor"
+.global name_and
+name_and:
+    .ascii "and"
+.global name_lsh
+name_lsh:
+    .ascii "<<"
+.global name_rsh
+name_rsh:
+    .ascii ">>"
+.global name_or
+name_or:
+    .ascii "or"
 .global name_mult
 name_mult:
     .ascii "*"
@@ -85,9 +102,6 @@ name_dot:
 .global name_dotstack
 name_dotstack:
     .ascii ".s"
-
-test:
-    .asciz "BANANA"
 
     .section .bss
     .global translation_buff
@@ -361,6 +375,129 @@ code_plus:
     beqz a9, IRAM_err_of
     movi a2, 1
     retw
+
+.global code_minus
+.align 4
+code_minus:
+    call8 .minus_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .minus_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    sub a8, a8, a11
+    call4 spush
+    beqz a9, IRAM_err_of
+    movi a2, 1
+    retw
+
+
+.global code_xor
+.align 4
+code_xor:
+    call8 .xor_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .xor_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    xor a8, a11, a8
+    call4 spush
+    beqz a9, IRAM_err_of
+    movi a2, 1
+    retw
+
+.global code_or
+.align 4
+code_or:
+    call8 .or_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .or_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    or a8, a11, a8
+    call4 spush
+    beqz a9, IRAM_err_of
+    movi a2, 1
+    retw
+
+.global code_and
+.align 4
+code_and:
+    call8 .and_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .and_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    and a8, a11, a8
+    call4 spush
+    movi a2, 1
+    retw
+    beqz a9, IRAM_err_of
+
+.global code_lsh
+.align 4
+code_lsh:
+    call8 .lsh_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .lsh_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    ssl a11
+    sll a8, a8
+    call4 spush
+    movi a2, 1
+    retw
+    beqz a9, IRAM_err_of
+
+.global code_rsh
+.align 4
+code_rsh:
+    call8 .rsh_wrap
+    movi a10, .end_word_exec
+    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    .rsh_wrap:
+    entry a1, 32
+    call4 spop 
+    beqz a9, IRAM_err_uf
+    mov a11, a8
+    call4 spop
+    beqz a9, IRAM_err_uf
+    ssr a11
+    srl a8, a8
+    call4 spush
+    movi a2, 1
+    retw
+    beqz a9, IRAM_err_of
 
 .global code_mult
 .align 4
