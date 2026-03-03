@@ -7,6 +7,8 @@
     .global PSRAM
 msg_ok:
     .asciz "  ok "
+msg_compiling:
+    .asciz "  compiling "
 msg:
 .asciz "Welcome to skforthESP32! (max 126 char per line)\n"
 
@@ -290,16 +292,25 @@ interpret_line:
 
     call0 lexer
 
+    movi a10, mode
+    l8ui a10, a10, 0
+    bnez a10, .print_comp
+
     movi a10, msg_ok
     call8 uart_print
-
     movi a10, sp
     l8ui a10, a10, 0
     movi a11, 0x30
     or a10, a10, a11            # number to ASCII decimal
     movi a11, 1
     call8 uart_putc
+    j .print_interp_end
 
+    .print_comp:
+    movi a10, msg_compiling
+    call8 uart_print
+
+    .print_interp_end:
     movi a10, cr_text
     call8 uart_print
 

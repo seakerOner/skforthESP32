@@ -1,6 +1,8 @@
     .section .rodata
     .global COMPTIME
     .global INTERPRET
+msg_notoken:
+    .asciz "ERROR: No token to consume\n"
 .equ COMPTIME, 1
 .equ INTERPRET, 0
 unknown_word_err:
@@ -9,6 +11,8 @@ unknown_word_err:
     .section .text
     .global lexer
     .global .end_word_exec
+
+# TODO: add the hability to execute compiled words on the lexer
 
 .align 4
 lexer: # phy a2 -> len | phy a3 -> buffer
@@ -197,10 +201,67 @@ exec_word: # a9 -> word base addr
         .not_immediate:
             l32i a10, a9, 8                 # WORD code addr
             call8 codeadd
-            # TODO: add word to code_space
+            j .end_word_exec
 
 .align 4
 .end_word_exec:
     beq a5, a4, .end
     j .next_tok
 
+# for words that need to consume the next token (e.g. a name for a new WORD)
+#
+# this subroutine doesnt not update the current index in lexer automatically, 
+# but it does return the index after the consumed token
+.global get_next_token
+.align 4
+get_next_token: # returns a2 -> tokenlen | a3 -> token addr | a4 -> current input index
+    entry a1, 32
+
+    mov a7, a3
+    mov a3, a2                   # buffer
+    mov a8, a4
+    mov a4, a7                   # total
+    mov a5, a8                   # current index
+
+    movi a7, 0                      # current token len counter
+    .skip_spaces_gtk:
+    beq a5, a4, .notoken_gtk
+    add a6, a3, a5
+    l8ui a6, a6, 0
+    bnei a6, 32, .loop_gtk
+    addi a5, a5, 1
+    j .skip_spaces_gtk
+.loop_gtk:
+    beq a5, a4, .notoken_gtk
+    add a6, a3, a5                  # buffer[i] addr
+    l8ui a6, a6, 0
+    beqi a6, 32, .stepgtk              # buffer[i] == space
+        
+    beqz a7, save_tok_start_gtk
+
+    4:
+    addi a7, a7, 1
+    j 5f 
+    
+    .stepgtk:
+    bnez a7, .done_get_next_token
+    5:
+    addi a5, a5, 1
+    bne a5, a4, .loop_gtk
+
+    bnei a6, 32, .done_get_next_token
+
+.done_get_next_token:
+    mov a3, a7                      # tokenlen
+    mov a4, a5                      # current index
+    mov a2, a8                      # token addr
+    retw
+
+save_tok_start_gtk:
+    add a8, a3, a5
+    j 4b
+
+.notoken_gtk:
+    movi a12, msg_notoken
+    call8 uart_print12
+    call0 esp_restart

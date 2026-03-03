@@ -352,8 +352,8 @@ code_semicolon:
     beqz a12, .semicolon_fail            
 
     call8 .wrap_semicolon
+    movi a10, INTERPRET
     movi a12, mode
-    movi a10, 0
     s8i a10, a12, 0             # set to INTERPRET 
     movi a10, .end_word_exec
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
@@ -373,12 +373,39 @@ code_comma:
     movi a12, mode
     l8ui a12, a12, 0
     bnez a12, .comma_comptime
-    movi a12, 1
+    movi a12, COMPTIME
     movi a13, mode
     s8i a12, a13, 0             # set to COMPTIME
 
+    mov a10, a3                 # buffer
+    mov a11, a4                 # total
+    mov a12, a5                 # current index
+    call8 wrap_comma
+    mov a5, a12                 # update current index on lexer
+
     movi a10, .end_word_exec
     jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    .align 4
+    wrap_comma:
+    entry a1, 32
+
+    call12 code_current
+    mov a10, a2                 # buffer
+    mov a11, a3                 # total
+    mov a12, a4                 # current index
+    mov a2, a14                 # code_space[p]
+    call8 get_next_token        
+    mov a4, a12                 # current index for lexer
+    # a10 -> token addr
+    # a11 -> tokenlen
+    # a12 -> code_ptr
+    # a13 -> immediate flag
+    mov a12, a2
+    movi a13, 0
+    call8 dic_addcomp
+   
+    retw
+
     .comma_comptime:
     movi a10, msg_notinterpret
     call8 uart_print
