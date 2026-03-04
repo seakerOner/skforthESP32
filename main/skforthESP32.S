@@ -177,6 +177,12 @@ app_main:
     movi a13, 0
     call0 dic_addprim
 
+    movi a10, name_lit
+    movi a11, 3
+    movi a12, code_lit
+    movi a13, 1                 # immediate
+    call0 dic_addprim
+
     movi a10, name_dotstack
     movi a11, 2
     movi a12, code_dotstack

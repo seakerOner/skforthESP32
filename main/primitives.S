@@ -35,6 +35,9 @@ name_lessthan:
     .global name_morethan
 name_morethan:
     .ascii ">"
+    .global name_lit
+name_lit:
+    .ascii "LIT"
     .global name_spacechar
 name_spacechar:
     .ascii " "
@@ -158,6 +161,21 @@ code_here:
     call4 spush
     beqz a9, FLASH_err_of
     retw
+
+.global code_lit
+.align 4
+code_lit:
+    entry a1, 32
+    movi a12, mode
+    l8ui a12, a12, 0
+    beqz a12, .lit_fail
+
+    call8 codeadd_litflag
+    retw
+    .lit_fail:
+    movi a10, msg_notcomptime
+    call8 uart_print
+    call0 esp_restart
 
 .global code_alloc
 .align 4

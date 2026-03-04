@@ -217,7 +217,7 @@ exec_word: # a9 -> word base addr
             j .end_word_exec
 .align 4
 .end_word_exec:
-    beq a5, a4, .end
+    bgeu a4, a5, .end
     j .next_tok
 
 # for words that need to consume the next token (e.g. a name for a new WORD)
