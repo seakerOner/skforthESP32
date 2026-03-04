@@ -191,18 +191,30 @@ exec_word: # a9 -> word base addr
     bnez a10, .comptime             # IF 0 -> interpret ELSE 1 -> comptime
     interpret:
         l32i a10, a9, 8                 # WORD code addr
-        jx a10
+        movi a14, input_idx
+        s32i a5, a14, 0                  # save current index on input buffer
+        callx8 a10
+
+        #movi a14, input_idx
+        #l32i a5, a14, 0                 # update current index on input buffer
+
+        j .end_word_exec
     .comptime:
         l8ui a10, a9, 4                 # offset 4 -> is_immediate
         beqz a10, .not_immediate        # IF 0 -> not_immediate ELSE 1 -> is_immediate
         immediate:
             l32i a10, a9, 8                 # WORD code addr
-            jx a10
+            movi a14, input_idx
+            s32i a5, a14, 0                  # save current index on input buffer
+            callx8 a10                      
+
+            #movi a14, input_idx
+            #l32i a5, a14, 0                 # update current index on input buffer
+            j .end_word_exec
         .not_immediate:
             l32i a10, a9, 8                 # WORD code addr
             call8 codeadd
             j .end_word_exec
-
 .align 4
 .end_word_exec:
     beq a5, a4, .end

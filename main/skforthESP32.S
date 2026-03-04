@@ -22,6 +22,9 @@ sk_handle:
     .section .bss
     .global mode
     .global num_base
+    .global input_idx
+    .global input_len
+    .global input_buffer
 
 .align 4
 mode:
@@ -34,6 +37,10 @@ input_buffer:
 .align 4
 input_len:
     .space 1
+
+.align 4
+input_idx:
+    .space 4
 
 .align 4
 num_base:
@@ -50,6 +57,10 @@ app_main:
 
     movi a2, here_addr
     movi a3, PSRAM
+    s32i a3, a2, 0
+
+    movi a2, input_idx
+    movi a3, 0
     s32i a3, a2, 0
 
     movi a2, translation_buff
@@ -224,15 +235,13 @@ app_main:
     # INVARIANT REGISTERS
     # phy a2                         -> input_len       addr
     # phy a3                         -> input_buffer    addr
+    #
+    # The invariant registers below are not in effect.
     # phy a14 (logic  a6 offset  8 ) -> uart fifo       addr
     # phy a15 (logic  a7 offset  8 ) -> uart status     addr
-    #
-    # The registers below are not in effect.
     # phy a22 (logic a10 offset 12 ) -> sp index     (max 7) 
     # phy a23 (logic a11 offset 12 ) -> stack base      addr      
 
-    call8  init_uart
-    # call12 init_stack
     movi a2, input_len
     movi a3, input_buffer
 
@@ -242,6 +251,8 @@ app_main:
 .print_skhandle:
     movi a5, 0
     s8i a5, a2, 0               # reset len
+    movi a4, input_idx
+    s32i a5, a4, 0               # reset input idx
 
     movi a10, sk_handle
     call8 uart_print

@@ -144,18 +144,14 @@ FLASH_err_uf:   # a3 -> return addr
 .global code_cr
 .align 4 
 code_cr:
+    entry a1, 32
     movi a10, cr_text
     call8 uart_print
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    retw
 
 .global code_here
 .align 4
 code_here:
-    call8 .here_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .here_wrap:
     entry a1, 32
     movi a8, here_addr
     l32i a8, a8, 0
@@ -166,10 +162,6 @@ code_here:
 .global code_alloc
 .align 4
 code_alloc:     # accepts a number of bytes (8 bits)
-    call8 .alloc_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .alloc_wrap:
     entry a1, 32
     call4 spop              # num cells (32bits)
     beqz a9, FLASH_err_uf
@@ -182,6 +174,7 @@ code_alloc:     # accepts a number of bytes (8 bits)
 .global code_dotstack
 .align 4
 code_dotstack:
+    entry a1, 32
     movi a10, name_lessthan
     l8ui a10, a10, 0
     call8 uart_putc
@@ -200,15 +193,6 @@ code_dotstack:
     l8ui a10, a10, 0
     call8 uart_putc
 
-    call8 .dotstack_wrap
-
-    .after_dotstackwrap:
-    movi a10, .end_word_exec
-    jx a10
-
-    .align 4
-    .dotstack_wrap:
-    entry a1, 32
     movi a4, sp        
     l8ui a4, a4, 0
     .next_val_stack:
@@ -269,6 +253,7 @@ code_dotstack:
 .global code_dot
 .align 4
 code_dot:
+    entry a1, 32
     call8 .dot_wrap
 
     # a12 -> value from stack
@@ -305,8 +290,7 @@ code_dot:
     # print buffer
     mov a10, a13
     call8 uart_print
-    movi a10, .end_word_exec
-    jx a10
+    retw
 
     .align 4 
     .dot_wrap:
@@ -331,11 +315,6 @@ IRAM_err_uf:
 .global code_dup
 .align 4
 code_dup:
-    call8 .dup_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .dup_wrap:
     entry a1, 32
     call4 spop  
     beqz a9, IRAM_err_uf
@@ -347,6 +326,7 @@ code_dup:
 .global code_semicolon
 .align 4
 code_semicolon:
+    entry a1, 32
     movi a12, mode
     l8ui a12, a12, 0
     beqz a12, .semicolon_fail            
@@ -355,8 +335,7 @@ code_semicolon:
     movi a10, INTERPRET
     movi a12, mode
     s8i a10, a12, 0             # set to INTERPRET 
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    retw
     .semicolon_fail:
     movi a10, msg_notcomptime
     call8 uart_print
@@ -370,6 +349,7 @@ code_semicolon:
 .global code_comma
 .align 4
 code_comma:
+    entry a1, 32
     movi a12, mode
     l8ui a12, a12, 0
     bnez a12, .comma_comptime
@@ -377,25 +357,26 @@ code_comma:
     movi a13, mode
     s8i a12, a13, 0             # set to COMPTIME
 
-    mov a10, a3                 # buffer
-    mov a11, a4                 # total
-    mov a12, a5                 # current index
-    call8 wrap_comma
-    mov a5, a12                 # update current index on lexer
+    movi a10, input_buffer       # buffer
+    movi a11, input_len          # total
+    l8ui a11, a11, 0
+    movi a12, input_idx          # current index
+    l32i a12, a12, 0
 
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    call8 wrap_comma
+    retw
     .align 4
     wrap_comma:
     entry a1, 32
 
-    call12 code_current
+    call8 code_current
     mov a10, a2                 # buffer
     mov a11, a3                 # total
     mov a12, a4                 # current index
     mov a2, a14                 # code_space[p]
     call8 get_next_token        
-    mov a4, a12                 # current index for lexer
+    movi a5, input_idx
+    s8i a12, a5, 0              # update current index on lexer
     # a10 -> token addr
     # a11 -> tokenlen
     # a12 -> code_ptr
@@ -416,11 +397,6 @@ code_comma:
 .global code_plus
 .align 4
 code_plus:
-    call8 .plus_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .plus_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -436,11 +412,6 @@ code_plus:
 .global code_minus
 .align 4
 code_minus:
-    call8 .minus_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .minus_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -457,11 +428,6 @@ code_minus:
 .global code_xor
 .align 4
 code_xor:
-    call8 .xor_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .xor_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -477,11 +443,6 @@ code_xor:
 .global code_or
 .align 4
 code_or:
-    call8 .or_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .or_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -497,11 +458,6 @@ code_or:
 .global code_and
 .align 4
 code_and:
-    call8 .and_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .and_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -517,11 +473,6 @@ code_and:
 .global code_lsh
 .align 4
 code_lsh:
-    call8 .lsh_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .lsh_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -533,16 +484,10 @@ code_lsh:
     call4 spush
     movi a2, 1
     retw
-    beqz a9, IRAM_err_of
 
 .global code_rsh
 .align 4
 code_rsh:
-    call8 .rsh_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .rsh_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -554,16 +499,10 @@ code_rsh:
     call4 spush
     movi a2, 1
     retw
-    beqz a9, IRAM_err_of
 
 .global code_mult
 .align 4
 code_mult:
-    call8 .mult_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .mult_wrap:
     entry a1, 32
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -577,18 +516,13 @@ code_mult:
 .global code_drop
 .align 4
 code_drop:
-    call12 spop # 1 OP so it's better to do only one window rotation 
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    entry a1, 32
+    call4 spop # 1 OP so it's better to do only one window rotation 
+    retw
 
 .global code_swap
 .align 4
 code_swap:
-    call8 .swap_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .swap_wrap:
     entry a1, 32
     call4 spop
     beqz a9, IRAM_err_uf
@@ -605,11 +539,6 @@ code_swap:
 .global code_over
 .align 4
 code_over:
-    call8 .over_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .align 4
-    .over_wrap:
     entry a1, 32
     call4 spop
     beqz a9, IRAM_err_uf
@@ -628,17 +557,13 @@ code_over:
 .global code_depth
 .align 4
 code_depth:
-    call12 slen # 1 OP so it's better to do only one window rotation
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
+    entry a1, 32
+    call4 slen # 1 OP so it's better to do only one window rotation
+    retw
 
 .global code_at
 .align 4
 code_at:
-    call8 .at_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .at_wrap:
     entry a1, 32 
     call4 spop
     beqz a9, IRAM_err_uf
@@ -649,10 +574,6 @@ code_at:
 .global code_atbyte
 .align 4
 code_atbyte:
-    call8 .atbyte_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    .atbyte_wrap:
     entry a1, 32 
     call4 spop 
     beqz a9, IRAM_err_uf
@@ -663,10 +584,6 @@ code_atbyte:
 .global code_store 
 .align 4
 code_store:
-    call8 store_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    store_wrap:
     entry a1, 32
     call4 spop
     beqz a9, IRAM_err_uf
@@ -679,10 +596,6 @@ code_store:
 .global code_storebyte
 .align 4
 code_storebyte:
-    call8 storebyte_wrap
-    movi a10, .end_word_exec
-    jx a10    # a normal JUMP has a range of -131068 to +131075 bytes. Not enough to go from iram to flash safely
-    storebyte_wrap:
     entry a1, 32
     call4 spop
     beqz a9, IRAM_err_uf

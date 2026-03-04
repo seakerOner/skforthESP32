@@ -13,24 +13,6 @@ sp:
     .global stack
     .global sp
 
-    .section .text
-    .global init_stack
-
-# TODO:
-# invariant registers here are invalid because when switching windows a10, a11 are not naturally "saved" 
-# by the entry/retw combo. Normally it only restores a2-a6. manually saving the context could be an option.
-# But as being devil's advocate maybe this is over-engineering and won't give as much performance as I naively may expect.
-# Something to thinker about and test.
-
-.align 4
-init_stack:
-    entry a1, 32
-
-    movi a10, 0
-    movi a11, stack
-
-    retw
-
     .section .iram1.text, "ax"
     .global spush
     .global spop

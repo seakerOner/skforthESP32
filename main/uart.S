@@ -28,6 +28,8 @@ init_uart:
 .align 4
 uart_print: # (reg2 -> string)
     entry a1, 16
+    movi a6, UART_FIFO
+    movi a7, UART_STATUS
 
     mov a3, a2               # string
 
@@ -78,6 +80,8 @@ uart_print12: # (reg2 -> string)
 # uart_print with no window rotation
 .align 4
 uart_print0: # (reg2 -> string)
+    movi a6, UART_FIFO
+    movi a7, UART_STATUS
     mov a3, a2               # string
 
 .loop0:
@@ -101,6 +105,8 @@ uart_print0: # (reg2 -> string)
 .align 4
 uart_trygetc:
     entry a1, 16
+    movi a6, UART_FIFO
+    movi a7, UART_STATUS
 
     l32i a4, a7, 0
     extui a4, a4, 0, 8      # RXFIFO count
@@ -116,6 +122,8 @@ uart_trygetc:
 .align 4 
 uart_putc:
     entry a1, 16 
+    movi a6, UART_FIFO
+    movi a7, UART_STATUS
 
 .wait_putc:
     l32i a4, a7, 0
@@ -163,6 +171,8 @@ uart_putc12:    # reg4 -> char
 .align 4
 uart_printn: # a2 -> addr | a3 -> len
     entry a1, 16
+    movi a6, UART_FIFO
+    movi a7, UART_STATUS
     mov a12, a2
 
     movi a13, 0     # counter
